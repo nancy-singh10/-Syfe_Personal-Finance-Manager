@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Personal Finance Manager</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <!-- Main Navigation Bar -->
+    <header class="navbar">
+        <div class="nav-brand">
+            <span class="brand-icon">💰</span>
+            <span class="brand-title">Personal Finance Manager</span>
+        </div>
+        <div id="user-nav" class="nav-user hidden">
+            <span id="nav-username" class="user-email"></span>
+            <button id="logout-btn" class="btn btn-secondary btn-sm" onclick="handleLogout()">Logout</button>
+        </div>
+    </header>
+
+    <!-- Global Alert Box -->
+    <div id="alert-box" class="alert-box hidden"></div>
+
+    <main class="container">
+
+        <!-- ================= AUTH VIEW ================= -->
+        <section id="auth-section" class="card auth-card">
+            <div class="auth-tabs">
+                <button id="tab-login-btn" class="auth-tab-btn active" onclick="switchAuthTab('login')">Login</button>
+                <button id="tab-register-btn" class="auth-tab-btn" onclick="switchAuthTab('register')">Register</button>
+            </div>
+
+            <!-- Login Form -->
+            <form id="login-form" class="auth-form" onsubmit="handleLogin(event)">
+                <h2>Sign In to Your Account</h2>
+                <div class="form-group">
+                    <label for="login-username">Username / Email</label>
+                    <input type="email" id="login-username" required placeholder="user@example.com">
+                </div>
+                <div class="form-group">
+                    <label for="login-password">Password</label>
+                    <input type="password" id="login-password" required placeholder="••••••••">
+                </div>
+                <button type="submit" class="btn btn-primary btn-block">Sign In</button>
+            </form>
+
+            <!-- Register Form -->
+            <form id="register-form" class="auth-form hidden" onsubmit="handleRegister(event)">
+                <h2>Create New Account</h2>
+                <div class="form-group">
+                    <label for="reg-username">Email Address (Username)</label>
+                    <input type="email" id="reg-username" required placeholder="user@example.com">
+                </div>
+                <div class="form-group">
+                    <label for="reg-password">Password</label>
+                    <input type="password" id="reg-password" required minlength="6" placeholder="Min 6 characters">
+                </div>
+                <div class="form-group">
+                    <label for="reg-fullname">Full Name</label>
+                    <input type="text" id="reg-fullname" required placeholder="John Doe">
+                </div>
+                <div class="form-group">
+                    <label for="reg-phone">Phone Number</label>
+                    <input type="tel" id="reg-phone" required placeholder="+1234567890">
+                </div>
+                <button type="submit" class="btn btn-primary btn-block">Create Account</button>
+            </form>
+        </section>
+
+        <!-- ================= MAIN APP VIEW ================= -->
+        <div id="app-section" class="hidden">
+
+            <!-- Overview KPI Summary Cards -->
+            <section class="kpi-grid">
+                <div class="card kpi-card kpi-income">
+                    <div class="kpi-label">Total Income</div>
+                    <div id="kpi-income" class="kpi-value">$0.00</div>
+                </div>
+                <div class="card kpi-card kpi-expense">
+                    <div class="kpi-label">Total Expenses</div>
+                    <div id="kpi-expense" class="kpi-value">$0.00</div>
+                </div>
+                <div class="card kpi-card kpi-balance">
+                    <div class="kpi-label">Net Balance</div>
+                    <div id="kpi-balance" class="kpi-value">$0.00</div>
+                </div>
+            </section>
+
+            <!-- Module Navigation Tabs -->
+            <nav class="module-nav">
+                <button class="nav-tab active" onclick="switchModule('transactions')">💳 Transactions</button>
+                <button class="nav-tab" onclick="switchModule('categories')">🏷️ Categories</button>
+                <button class="nav-tab" onclick="switchModule('goals')">🎯 Savings Goals</button>
+                <button class="nav-tab" onclick="switchModule('reports')">📊 Reports</button>
+            </nav>
+
+            <!-- ================= TAB 1: TRANSACTIONS ================= -->
+            <section id="module-transactions" class="module-section">
+                <div class="grid-2col">
+                    <!-- Create Transaction Card -->
+                    <div class="card">
+                        <h3>Add Transaction</h3>
+                        <form id="transaction-form" onsubmit="handleCreateTransaction(event)">
+                            <div class="form-group">
+                                <label for="tx-amount">Amount ($)</label>
+                                <input type="number" step="0.01" min="0.01" id="tx-amount" required placeholder="0.00">
+                            </div>
+                            <div class="form-group">
+                                <label for="tx-date">Date (Cannot be future)</label>
+                                <input type="date" id="tx-date" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="tx-category">Category</label>
+                                <select id="tx-category" required>
+                                    <option value="">Select Category...</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="tx-description">Description (Optional)</label>
+                                <input type="text" id="tx-description" placeholder="e.g. Monthly salary, Grocery">
+                            </div>
+                            <button type="submit" class="btn btn-primary">Save Transaction</button>
+                        </form>
+                    </div>
+
+                    <!-- Filter Transactions Card -->
+                    <div class="card">
+                        <h3>Filter Transactions</h3>
+                        <form id="filter-form" onsubmit="handleFilterTransactions(event)">
+                            <div class="form-group">
+                                <label for="filter-start-date">Start Date</label>
+                                <input type="date" id="filter-start-date">
+                            </div>
+                            <div class="form-group">
+                                <label for="filter-end-date">End Date</label>
+                                <input type="date" id="filter-end-date">
+                            </div>
+                            <div class="form-group">
+                                <label for="filter-category">Category</label>
+                                <select id="filter-category">
+                                    <option value="">All Categories</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="filter-type">Type</label>
+                                <select id="filter-type">
+                                    <option value="">All Types</option>
+                                    <option value="INCOME">Income</option>
+                                    <option value="EXPENSE">Expense</option>
+                                </select>
+                            </div>
+                            <div class="form-actions">
+                                <button type="submit" class="btn btn-secondary">Apply Filters</button>
+                                <button type="button" class="btn btn-outline" onclick="resetFilters()">Reset</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Transactions Table -->
+                <div class="card table-card">
+                    <div class="table-header">
+                        <h3>Transactions History</h3>
+                        <span id="tx-count" class="badge">0 entries</span>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Category</th>
+                                    <th>Type</th>
+                                    <th>Description</th>
+                                    <th>Amount</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="transactions-table-body">
+                                <tr><td colspan="6" class="text-center">No transactions found.</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ================= TAB 2: CATEGORIES ================= -->
+            <section id="module-categories" class="module-section hidden">
+                <div class="grid-2col">
+                    <!-- Add Custom Category Card -->
+                    <div class="card">
+                        <h3>Create Custom Category</h3>
+                        <form id="category-form" onsubmit="handleCreateCategory(event)">
+                            <div class="form-group">
+                                <label for="cat-name">Category Name</label>
+                                <input type="text" id="cat-name" required placeholder="e.g. Freelance, Investments">
+                            </div>
+                            <div class="form-group">
+                                <label for="cat-type">Type</label>
+                                <select id="cat-type" required>
+                                    <option value="INCOME">Income</option>
+                                    <option value="EXPENSE">Expense</option>
+                                </select>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Create Category</button>
+                        </form>
+                    </div>
+
+                    <!-- Category Info Card -->
+                    <div class="card">
+                        <h3>Category Rules</h3>
+                        <ul class="info-list">
+                            <li><strong>Predefined Defaults:</strong> Salary, Food, Rent, Transportation, Entertainment, Healthcare, Utilities. Defaults cannot be deleted.</li>
+                            <li><strong>Custom Categories:</strong> Names must be unique for your account.</li>
+                            <li><strong>Referential Protection:</strong> Categories currently linked to existing transactions cannot be deleted.</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Categories Table -->
+                <div class="card table-card">
+                    <h3>All Available Categories</h3>
+                    <div class="table-responsive">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Type</th>
+                                    <th>Classification</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="categories-table-body">
+                                <tr><td colspan="4" class="text-center">Loading categories...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ================= TAB 3: SAVINGS GOALS ================= -->
+            <section id="module-goals" class="module-section hidden">
+                <div class="grid-2col">
+                    <!-- Create Goal Card -->
+                    <div class="card">
+                        <h3>Create Savings Goal</h3>
+                        <form id="goal-form" onsubmit="handleCreateGoal(event)">
+                            <div class="form-group">
+                                <label for="goal-name">Goal Name</label>
+                                <input type="text" id="goal-name" required placeholder="e.g. Emergency Fund, Vacation">
+                            </div>
+                            <div class="form-group">
+                                <label for="goal-target">Target Amount ($)</label>
+                                <input type="number" step="0.01" min="0.01" id="goal-target" required placeholder="5000.00">
+                            </div>
+                            <div class="form-group">
+                                <label for="goal-target-date">Target Date (Must be future)</label>
+                                <input type="date" id="goal-target-date" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="goal-start-date">Start Date (Defaults to today)</label>
+                                <input type="date" id="goal-start-date">
+                            </div>
+                            <button type="submit" class="btn btn-primary">Establish Goal</button>
+                        </form>
+                    </div>
+
+                    <!-- Goals Logic Card -->
+                    <div class="card">
+                        <h3>Progress Formula</h3>
+                        <p class="text-muted">Goal progress is computed automatically using:</p>
+                        <div class="code-badge">Current Progress = Total Income - Total Expenses (since Start Date)</div>
+                        <p class="text-muted" style="margin-top: 10px;">Each goal tracks independently and shows percentage completion and remaining amount.</p>
+                    </div>
+                </div>
+
+                <!-- Goals List / Cards -->
+                <div class="card">
+                    <h3>Your Savings Goals</h3>
+                    <div id="goals-container" class="goals-grid">
+                        <div class="text-center text-muted">No goals created yet.</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ================= TAB 4: REPORTS ================= -->
+            <section id="module-reports" class="module-section hidden">
+                <div class="card">
+                    <h3>Financial Reports & Analytics</h3>
+                    <div class="report-controls">
+                        <div class="form-group">
+                            <label>Report Frequency</label>
+                            <div class="radio-group">
+                                <label><input type="radio" name="reportType" value="monthly" checked onchange="toggleReportType()"> Monthly</label>
+                                <label><input type="radio" name="reportType" value="yearly" onchange="toggleReportType()"> Yearly</label>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="rep-year">Year</label>
+                            <input type="number" id="rep-year" min="1900" max="2100" value="2024">
+                        </div>
+                        <div class="form-group" id="month-select-group">
+                            <label for="rep-month">Month</label>
+                            <select id="rep-month">
+                                <option value="1">1 - January</option>
+                                <option value="2">2 - February</option>
+                                <option value="3">3 - March</option>
+                                <option value="4">4 - April</option>
+                                <option value="5">5 - May</option>
+                                <option value="6">6 - June</option>
+                                <option value="7">7 - July</option>
+                                <option value="8">8 - August</option>
+                                <option value="9">9 - September</option>
+                                <option value="10">10 - October</option>
+                                <option value="11">11 - November</option>
+                                <option value="12">12 - December</option>
+                            </select>
+                        </div>
+                        <div class="form-group" style="align-self: flex-end;">
+                            <button class="btn btn-primary" onclick="loadReport()">Generate Report</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Report Output Container -->
+                <div id="report-output" class="hidden">
+                    <div class="card kpi-card" style="margin-bottom: 20px;">
+                        <div class="kpi-label" id="rep-title">Net Savings</div>
+                        <div id="rep-net-savings" class="kpi-value">$0.00</div>
+                    </div>
+
+                    <div class="grid-2col">
+                        <!-- Income Breakdown Table -->
+                        <div class="card">
+                            <h4>Income by Category</h4>
+                            <table class="data-table">
+                                <thead>
+                                    <tr><th>Category</th><th class="text-right">Amount</th></tr>
+                                </thead>
+                                <tbody id="rep-income-table"></tbody>
+                            </table>
+                        </div>
+
+                        <!-- Expenses Breakdown Table -->
+                        <div class="card">
+                            <h4>Expenses by Category</h4>
+                            <table class="data-table">
+                                <thead>
+                                    <tr><th>Category</th><th class="text-right">Amount</th></tr>
+                                </thead>
+                                <tbody id="rep-expense-table"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+    </main>
+
+    <!-- Modal for Edit Transaction -->
+    <div id="edit-tx-modal" class="modal hidden">
+        <div class="modal-content card">
+            <h3>Update Transaction</h3>
+            <p class="text-muted" style="font-size: 0.85rem;">Note: Transaction date cannot be modified.</p>
+            <form id="edit-tx-form" onsubmit="submitEditTransaction(event)">
+                <input type="hidden" id="edit-tx-id">
+                <div class="form-group">
+                    <label for="edit-tx-amount">Amount ($)</label>
+                    <input type="number" step="0.01" min="0.01" id="edit-tx-amount" required>
+                </div>
+                <div class="form-group">
+                    <label for="edit-tx-category">Category</label>
+                    <select id="edit-tx-category"></select>
+                </div>
+                <div class="form-group">
+                    <label for="edit-tx-description">Description</label>
+                    <input type="text" id="edit-tx-description">
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                    <button type="button" class="btn btn-outline" onclick="closeEditModal()">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal for Edit Goal -->
+    <div id="edit-goal-modal" class="modal hidden">
+        <div class="modal-content card">
+            <h3>Update Savings Goal</h3>
+            <form id="edit-goal-form" onsubmit="submitEditGoal(event)">
+                <input type="hidden" id="edit-goal-id">
+                <div class="form-group">
+                    <label for="edit-goal-target">Target Amount ($)</label>
+                    <input type="number" step="0.01" min="0.01" id="edit-goal-target" required>
+                </div>
+                <div class="form-group">
+                    <label for="edit-goal-date">Target Date (Future)</label>
+                    <input type="date" id="edit-goal-date" required>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">Update Goal</button>
+                    <button type="button" class="btn btn-outline" onclick="closeEditGoalModal()">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="js/app.js"></script>
+</body>
+</html>
