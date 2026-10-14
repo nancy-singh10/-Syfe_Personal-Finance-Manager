@@ -49,6 +49,10 @@ public class GoalService {
 
         LocalDate startDate = request.getStartDate() != null ? request.getStartDate() : LocalDate.now();
 
+        if (startDate.isAfter(request.getTargetDate())) {
+            throw new BadRequestException("Start date cannot be after target date");
+        }
+
         SavingsGoal goal = new SavingsGoal(
                 request.getGoalName(),
                 request.getTargetAmount(),
@@ -92,16 +96,22 @@ public class GoalService {
             throw new ForbiddenException("You are not authorized to update this goal");
         }
 
-        if (request.getTargetAmount() == null || request.getTargetAmount().compareTo(BigDecimal.ZERO) <= 0) {
-            throw new BadRequestException("Target amount must be a positive decimal value");
+        if (request.getTargetAmount() != null) {
+            if (request.getTargetAmount().compareTo(BigDecimal.ZERO) <= 0) {
+                throw new BadRequestException("Target amount must be a positive decimal value");
+            }
+            goal.setTargetAmount(request.getTargetAmount());
         }
 
-        if (request.getTargetDate() == null || !request.getTargetDate().isAfter(LocalDate.now())) {
-            throw new BadRequestException("Target date must be a future date");
+        if (request.getTargetDate() != null) {
+            if (!request.getTargetDate().isAfter(LocalDate.now())) {
+                throw new BadRequestException("Target date must be a future date");
+            }
+            if (goal.getStartDate() != null && request.getTargetDate().isBefore(goal.getStartDate())) {
+                throw new BadRequestException("Target date cannot be before goal start date");
+            }
+            goal.setTargetDate(request.getTargetDate());
         }
-
-        goal.setTargetAmount(request.getTargetAmount());
-        goal.setTargetDate(request.getTargetDate());
 
         SavingsGoal updated = goalRepository.save(goal);
         return calculateAndMap(updated, user);
@@ -141,7 +151,7 @@ public class GoalService {
         double progressPercentage = 0.0;
         if (target.compareTo(BigDecimal.ZERO) > 0 && currentProgress.compareTo(BigDecimal.ZERO) > 0) {
             double calculated = (currentProgress.doubleValue() / target.doubleValue()) * 100.0;
-            // Round to 2 decimal places e.g., 16.67
+            // Round to 2 decimal places e.g., 60.33
             progressPercentage = Math.round(calculated * 100.0) / 100.0;
         }
 
@@ -152,13 +162,17 @@ public class GoalService {
             remainingAmount = remainingAmount.setScale(2, RoundingMode.HALF_UP);
         }
 
+        BigDecimal progressToReturn = currentProgress.compareTo(BigDecimal.ZERO) == 0
+                ? BigDecimal.ZERO
+                : currentProgress.setScale(2, RoundingMode.HALF_UP);
+
         return new GoalResponse(
                 goal.getId(),
                 goal.getGoalName(),
                 goal.getTargetAmount().setScale(2, RoundingMode.HALF_UP),
                 goal.getTargetDate(),
                 goal.getStartDate(),
-                currentProgress.setScale(2, RoundingMode.HALF_UP),
+                progressToReturn,
                 progressPercentage,
                 remainingAmount
         );

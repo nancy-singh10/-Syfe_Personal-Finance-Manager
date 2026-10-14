@@ -80,9 +80,7 @@ public class TransactionService {
         }
 
         // Rule: Users can modify any transaction field except the date field.
-        if (request.getDate() != null && !request.getDate().equals(transaction.getDate())) {
-            throw new BadRequestException("Transaction date cannot be modified");
-        }
+        // If date is sent, it is ignored and remains unchanged.
 
         if (request.getAmount() != null) {
             if (request.getAmount().compareTo(BigDecimal.ZERO) <= 0) {
@@ -121,7 +119,7 @@ public class TransactionService {
     private TransactionResponse mapToResponse(Transaction t) {
         return new TransactionResponse(
                 t.getId(),
-                t.getAmount(),
+                t.getAmount() != null ? t.getAmount().setScale(2, java.math.RoundingMode.HALF_UP) : BigDecimal.ZERO.setScale(2, java.math.RoundingMode.HALF_UP),
                 t.getDate(),
                 t.getCategory(),
                 t.getDescription(),

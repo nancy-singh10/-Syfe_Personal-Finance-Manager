@@ -9,11 +9,9 @@ import java.time.LocalDate;
 
 public class GoalUpdateRequest {
 
-    @NotNull(message = "Target amount is required")
     @DecimalMin(value = "0.01", message = "Target amount must be a positive decimal value")
     private BigDecimal targetAmount;
 
-    @NotNull(message = "Target date is required")
     @Future(message = "Target date must be a future date")
     private LocalDate targetDate;
 

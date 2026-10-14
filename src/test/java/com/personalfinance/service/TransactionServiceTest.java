@@ -126,13 +126,18 @@ class TransactionServiceTest {
     }
 
     @Test
-    void testUpdateTransactionDateAttemptThrows() {
+    void testUpdateTransactionDateIgnored() {
         TransactionUpdateRequest req = new TransactionUpdateRequest(new BigDecimal("60000.00"), "Updated");
         req.setDate(LocalDate.of(2024, 2, 20)); // Changing date from 2024-01-15
 
         when(transactionRepository.findById(100L)).thenReturn(Optional.of(transaction));
+        when(transactionRepository.save(any(Transaction.class))).thenReturn(transaction);
 
-        assertThrows(BadRequestException.class, () -> transactionService.updateTransaction(100L, req, user));
+        TransactionResponse res = transactionService.updateTransaction(100L, req, user);
+
+        assertNotNull(res);
+        assertEquals(LocalDate.of(2024, 1, 15), transaction.getDate());
+        verify(transactionRepository).save(transaction);
     }
 
     @Test

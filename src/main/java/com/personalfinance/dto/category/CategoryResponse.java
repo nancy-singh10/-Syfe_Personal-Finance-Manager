@@ -1,5 +1,7 @@
 package com.personalfinance.dto.category;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public class CategoryResponse {
     private String name;
     private String type;
@@ -30,16 +32,17 @@ public class CategoryResponse {
         this.type = type;
     }
 
-    public boolean isIsCustom() {
+    @JsonProperty("isCustom")
+    public boolean getIsCustom() {
+        return isCustom;
+    }
+
+    @JsonProperty("custom")
+    public boolean getCustom() {
         return isCustom;
     }
 
     public void setIsCustom(boolean custom) {
-        isCustom = custom;
-    }
-
-    // Standard getter for Jackson boolean serialization
-    public boolean getIsCustom() {
-        return isCustom;
+        this.isCustom = custom;
     }
 }

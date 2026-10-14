@@ -102,6 +102,18 @@ class GoalServiceTest {
     }
 
     @Test
+    void testCreateGoalStartDateAfterTargetDateThrows() {
+        GoalRequest req = new GoalRequest(
+                "Emergency Fund",
+                new BigDecimal("5000.00"),
+                LocalDate.now().plusMonths(2),
+                LocalDate.now().plusMonths(3)
+        );
+
+        assertThrows(BadRequestException.class, () -> goalService.createGoal(req, user));
+    }
+
+    @Test
     void testUpdateGoalSuccess() {
         LocalDate updatedTarget = LocalDate.now().plusMonths(12);
         GoalUpdateRequest req = new GoalUpdateRequest(new BigDecimal("6000.00"), updatedTarget);
